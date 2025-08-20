@@ -226,6 +226,80 @@ app.delete("/api/deleteCompany/:cname", (req, res) => {
     res.status(200).json({ success: true, message: "Company deleted successfully" });
   });
 });
+//of admin routes
+
+app.get("/api/ofpassedStudents/:company", (req, res) => {
+    const { company } = req.params;
+    const query = `
+        SELECT ostname, osrno, obranch 
+        FROM ofstudent_progress 
+        WHERE ocname = ? 
+        AND orounds_cleared = (
+            SELECT otrounds FROM ofcompanies WHERE ocname = ?
+        )
+    `;
+    db.query(query, [company, company], (err, results) => {
+        if (err) return res.status(500).json({ error: "DB error" });
+        res.json(results);
+    });
+});
+
+
+
+app.get("/api/ofbranchPassedCount", (req, res) => {
+    const { branch, company } = req.query;
+
+    const query = `
+  SELECT COUNT(*) as count 
+  FROM ofstudent_progress 
+  WHERE ocname = ? 
+    AND LOWER(obranch) = LOWER(?) 
+    AND orounds_cleared = (
+        SELECT otrounds FROM ofcompanies WHERE ocname = ?
+    )
+`;
+
+
+    db.query(query, [company, branch, company], (err, results) => {
+        if (err) return res.status(500).json({ error: "DB error" });
+        res.json({ count: results[0].count });
+    });
+});
+
+app.post("/api/ofaddCompany", (req, res) => {
+  const { ocname, otrounds } = req.body;
+
+  if (!ocname || !otrounds) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  const query = "INSERT INTO ofcompanies (ocname, otrounds) VALUES (?, ?)";
+
+  db.query(query, [ocname, otrounds], (err, result) => {
+    if (err) {
+      console.error("Error inserting company:", err);
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    res.status(201).json({ success: true, message: "Company added successfully" });
+  });
+});
+
+app.delete("/api/ofdeleteCompany/:ocname", (req, res) => {
+  const { ocname } = req.params;
+
+  const query = "DELETE FROM ofcompanies WHERE ocname = ?";
+  db.query(query, [ocname], (err, result) => {
+    if (err) {
+      console.error("Error deleting company:", err);
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    res.status(200).json({ success: true, message: "Company deleted successfully" });
+  });
+});
+
+
 
 
 app.get("/", (req, res) => {

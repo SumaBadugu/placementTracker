@@ -16,7 +16,8 @@ const CampusSelection = () => {
             const path = type === "On Campus" ? "/company-selection" : "/ofCompany-selection";
             navigate(path, { state: { campusType: type } });
         } else if (isAdmin) {
-            navigate("/admin-dashboard", { state: { campusType: type } }); // Retaining the previous state
+            const path2 = type === "On Campus" ? "/admin-dashboard" : "/ofadmin-dashboard";
+            navigate(path2, { state: { campusType: type } }); // Retaining the previous state
         }
     };
     
